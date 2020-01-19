@@ -1,9 +1,9 @@
 const express = require('express')
 const router = express.Router()
 const Admin = require('../models/admin')
-const Log = require('../models/admin')
+const Log = require('../models/log')
 
-// Get all admins
+//Get all admins
 router.get('/', async (req, res) => {
     try {
         const admins = await Admin.find()
@@ -12,6 +12,7 @@ router.get('/', async (req, res) => {
         res.status(500).json({ message: err.message })
       }
   })
+
 
 //Get one Admin
 router.get('/:id', getAdmin , async (req, res) => {
@@ -33,7 +34,6 @@ router.post('/',async (req, res) => {
       if(arr2[j].ref!=arr2[j-1].ref) newarr.push(arr2[j]);
     }
 
-    //console.log(newarr)
     req.body.logs = newarr;
     
 

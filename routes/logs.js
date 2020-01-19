@@ -4,14 +4,59 @@ const Log = require('../models/log')
 const Admin = require('../models/admin')
 
 // Get all logs
+// router.get('/', async (req, res) => {
+//     try {
+//         const logs = await Log.find()
+//         res.json(logs)
+//     } catch (err) {
+//         res.status(500).json({ message: err.message })
+//       }
+//   })
+
 router.get('/', async (req, res) => {
-    try {
-        const logs = await Log.find()
-        res.json(logs)
-    } catch (err) {
-        res.status(500).json({ message: err.message })
-      }
-  })
+  try {
+    var lgs;
+    if (req.body.query == 1) { 
+      lgs = await Log.aggregate([{$match:{$and:[{timestamp:{$gt:new Date(req.body.startDate)}},{timestamp:{$lt:new Date(req.body.endDate)}}]}},{$group:{_id:{typos:"$type"},total:{$sum:1}}},{$sort:{total:-1}}])
+    }
+    if (req.body.query == 2) {
+      lgs = await Log.aggregate([{$match:{$and:[{timestamp:{$gt:new Date(req.body.startDate)}},{timestamp:{$lt:new Date(req.body.endDate)}},{type:req.body.type}]}},{$group:{_id:{date:{$substr:["$timestamp",0,10]}},total:{$sum:1}}}])
+    }
+    if (req.body.query == 3) {
+      lgs = await Log.aggregate([{$project:{_id:1,source_ip:1,type:1,day:{$substr:["$timestamp",0,10]}}},{$match:{day:req.body.day}},{$group:{_id:{ip:"$source_ip",type:"$type"},count:{$sum:1}}},{$sort:{source_ip:-1,count:-1}},{$group:{_id:"$_id.ip",arr:{$push:{typ:"$_id.type"}}}},{$project:{arr:{$slice:["$arr",3]}}}])
+    }
+    if (req.body.query == 4) {
+      lgs = await Log.aggregate([{$match:{$and:[{timestamp:{$gt:new Date(req.body.startDate)}},{timestamp:{$lt:new Date(req.body.endDate)}},{type:"Access"}]}},{$group:{_id:{method:"$access_log.method"},total:{$sum:1}}},{$sort:{total:1}},{$limit:2}])
+    }
+    if (req.body.query == 5) {
+      lgs = await Log.aggregate([{$unwind:"$access_log"},{$unwind:"$access_log.referer"},{$unwind:"$access_log.resource"},{$group:{_id:{referer:"$access_log.referer", resource:"$access_log.resource"},"total":{$sum:1}}}, {$match:{"total":{"$gt":1}}},{$match:{"_id.referer":{$ne:null}}},{$project:{"_id.resource":0}}])
+    }
+    if (req.body.query == 6) {
+      lgs = await Log.aggregate([{$match:{$or:[{type:"replicate"},{type:"Served"}]}},{$unwind:"$block"},{$unwind:"$block.block_id"},{$group:{_id:{date:{$substr:["$timestamp",0,10]},blk:"$block.block_id"},uniq:{$addToSet:"$_id.type"}}},{$project:{count:{$size:"$uniq"}}},{$match:{count:{$gt:1}}}])
+    }
+    if (req.body.query == 7){
+      lgs = await Admin.aggregate([{$lookup:{from:"logs",localField:"logs.ref",foreignField:"_id",as:"upvotes"}},{$unwind:"$upvotes"},{$match:{$and:[{"upvotes.timestamp":{$gt:new Date(req.body.startDate)}},{"upvotes.timestamp":{$lt:new Date(req.body.endDate)}}]}},{$group:{_id:{lgs:"$upvotes._id"},total:{$sum:1}}},{$sort:{total:-1}},{$limit:50}]).allowDiskUse(true);
+    }
+    if (req.body.query == 8){
+      lgs = await Admin.aggregate([{$unwind:"$logs"},{$group:{_id:"$_id",numLog:{$sum:1}}},{$sort:{numLog:-1}},{$limit:50}]).allowDiskUse(true)
+    }
+    if (req.body.query == 9){
+      lgs =  await Admin.aggregate([{$lookup:{from:"logs",localField:"logs.ref",foreignField:"_id",as:"upvotes"}},{$unwind:"$upvotes"},{$group:{_id:{lgs:"$_id",srcIps:"$upvotes.source_ip"},total:{$sum:1}}},{$sort:{total:-1}},{$limit:50}]).allowDiskUse(true)
+    }
+    if (req.body.query == 10){
+      lgs =  await Admin.aggregate([{$unwind:"$logs"},{$unwind:"$logs.ref"},{$project:{username:1,email:1,"logs.ref":1}},{$group:{_id:{email:"$email"},total:{$sum:1}}},{$match:{total:1}},{$group:{_id:"$_id.email",upvotes:{$push:{lgs:"$_id.logs.ref"}}}},{$project:{_id:0,upvotes:1}}]).allowDiskUse(true)
+    }
+    if (req.body.query == 11){
+      lgs =  await Admin.aggregate([{$match:{username:req.body.username}},{$lookup:{from:"logs",localField:"logs.ref",foreignField:"_id",as:"upvotes"}},{$unwind:"$upvotes"},{$group:{_id:{blks:"$upvotes.block.block_id"},blocks:{$push:{blk:"$upvotes.block.block_id"}}}}]).allowDiskUse(true)
+    } 
+    res.json(lgs)
+    
+  } catch (err) {
+      res.status(500).json({ message: err.message })
+      return;
+    }
+})
+
 
 //Get one Log
 router.get('/:id', getLog , async (req, res) => {
