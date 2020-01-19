@@ -15,7 +15,6 @@ const parser = {
         let counter = 3211731;
         const dataFile = fs.readFileSync('./access.log', 'UTF-8');
         const lines = dataFile.split(/\r?\n/);
-       // lines.forEach((line) => {
         for(let line of lines) {
             val++;
             let data = line.split(" ");
@@ -42,8 +41,6 @@ const parser = {
                 method = method.substring(1);
                 if (method.length > 10) {
                     continue;
-                    //console.log('Return 1')
-                    //return;
                 }
                 let resource = data[6];
                 let response = null;
@@ -88,7 +85,6 @@ const parser = {
                     }
                 })
                 try {
-                    //const newLog = log.save();
                     accessEntries.push(log)
                     counter++;
                   } catch (err) {
@@ -110,8 +106,6 @@ const parser = {
                 method = method.substring(1);
                 if (method.length > 10) {
                     continue;
-                    //console.log('Return 2')
-                    //return;
                 } 
                 let resource = data[6];
                 let response = null;
@@ -156,7 +150,6 @@ const parser = {
                     }
                 })
                 try {
-                    //const newLog = log.save();
                     accessEntries.push(log)
                     counter++;
                   } catch (err) {
@@ -172,7 +165,6 @@ const parser = {
         let counter=5155779;
         const dataFile = fs.readFileSync('./HDFS_DataXceiver.log', 'UTF-8');
         const lines = dataFile.split(/\r?\n/);
-       // lines.forEach((line) => {
         for(let line of lines) {
             val++;
             let data = line.split(" ");
@@ -278,13 +270,10 @@ const parser = {
                     block: blocks
                 })
                 try {
-                    //const newLog = log.save();
                     dataxceiverEntries.push(log)
                   } catch (err) {
                     console.log(err.message)
                   }
-                //console.log("-----------------")
-                //console.log(log);
             }
             // if src exists
             else{
@@ -325,13 +314,10 @@ const parser = {
                     block: blocks
                 })
                 try {
-                    //const newLog = log.save();
                     dataxceiverEntries.push(log)
                   } catch (err) {
                     console.log(err.message)
                   }
-                //console.log("-----------------")
-                //console.log(log);
             }
             console.log("row = " + val);
             
@@ -340,7 +326,6 @@ const parser = {
 
     parseNameSystem()  {
         const dataFile = fs.readFileSync('./HDFS_FS_Namesystem.log', 'UTF-8');
-        //const dataFile = fs.readFileSync('./accesstest.txt', 'UTF-8');
         const allLines = dataFile.split(/\r?\n/);
         let lines = 0;
         let c=5444270;
@@ -405,7 +390,6 @@ const parser = {
             })
             c++;
             try {
-                //const newLog = log.save();
                 dataNameSystem.push(log)
               } catch (err) {
                 console.log(err.message)

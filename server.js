@@ -13,13 +13,6 @@ db.once('open', () => {
     //const adminData = require('./fakedata');
     //var adm = adminData.generateFakeData();
     //db.collection("admins").insertMany(adm);
-   // var accessEntries = parser.parseAccessLog();
-   // db.collection("logs").insertMany(accessEntries);
-   // var dataxceiverEntries = parser.parseDataXceiver();
-   // db.collection("logs").insertMany(dataxceiverEntries);
-   // var dataNameSys = parser.parseNameSystem();
-   // db.collection("logs").insertMany(dataNameSys);
-   //parser.parseNameSystem();
 })
 
 app.use(express.json())
